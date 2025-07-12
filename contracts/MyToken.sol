@@ -20,7 +20,6 @@ contract MyToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 
     function safeMint(address to)
         public
-        onlyOwner
         returns (uint256)
     {
         uint256 tokenId = _nextTokenId++;
