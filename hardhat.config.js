@@ -10,5 +10,8 @@ module.exports = {
     firstAccount: {
       default: 0
     }
+  },
+  gasReporter: {
+    enabled: false
   }
 };
