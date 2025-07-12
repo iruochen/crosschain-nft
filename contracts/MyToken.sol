@@ -13,9 +13,9 @@ contract MyToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
     // metadata
     string constant META_DATA = "ipfs://QmaWkRvuYbzHyDV8esF5pbhS1vYWfQikv9RSAF2wJCG1rN";
 
-    constructor(address initialOwner)
-        ERC721("MyToken", "MTK")
-        Ownable(initialOwner)
+    constructor(string memory tokenName, string memory tokenSymbol)
+        ERC721(tokenName, tokenSymbol)
+        Ownable(msg.sender)
     {}
 
     function safeMint(address to)
