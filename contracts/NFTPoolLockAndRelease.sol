@@ -231,4 +231,20 @@ contract NFTPoolLockAndRelease is CCIPReceiver, OwnerIsCreator {
 
         IERC20(_token).safeTransfer(_beneficiary, amount);
     }
+
+    function estimateFeesView(
+        uint64 _destChainSelector,
+        address _receiver,
+        uint256 tokenId
+    ) public view returns (uint256) {
+        bytes memory data = abi.encode(tokenId, msg.sender);
+        Client.EVM2AnyMessage memory msgToSend = _buildCCIPMessage(
+            _receiver,
+            data,
+            address(s_linkToken)
+        );
+        IRouterClient router = IRouterClient(this.getRouter());
+        return router.getFee(_destChainSelector, msgToSend);
+    }
+
 }
