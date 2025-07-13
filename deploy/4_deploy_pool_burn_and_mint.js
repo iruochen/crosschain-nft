@@ -16,6 +16,26 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     } else {
         destChainRouter = networkConfig[network.config.chainId].router
         linkTokenAddr = networkConfig[network.config.chainId].linkToken
+
+        // Step 0: withdraw LINK from old contract before deploy
+        const preDeployment = await deployments.getOrNull("NFTPoolBurnAndMint")
+        if (preDeployment) {
+            log(`preDeployment address: ${preDeployment.address}`)
+            const linkToken = await ethers.getContractAt("LinkToken", linkTokenAddr)
+            const oldPool = await ethers.getContractAt("NFTPoolBurnAndMint", preDeployment.address)
+            const linkBalance = await linkToken.balanceOf(oldPool.target)
+            if (linkBalance > 0n) {
+                log(`Found LINK in old pool ${oldPool.target}, withdrawing ${ethers.formatEther(linkBalance)} LINK...`)
+                const withdrawTx = await oldPool.withdrawToken(firstAccount, linkTokenAddr)
+                await withdrawTx.wait()
+                log("LINK withdraw.")
+            } else {
+                log("No LINK in old contract.")
+            }
+        } else {
+            log("No previous NFTPoolBurnAndMint found.")
+        }
+
     }
     const wnftDeployment = await deployments.get("WrappedMyToken")
     const wnftAddr = wnftDeployment.address
@@ -35,7 +55,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     console.log(`🔍 estimate gas: ${estimatedGas.toString()}`)
     console.log(`⛽ current gas price: ${ethers.formatUnits(gasPrice, "gwei")} gwei`)
-    console.log(`💰 estimate cost: ${ethers.formatEther(estimatedCost)} POL`)
+    console.log(`💰 estimate cost: ${ethers.formatEther(estimatedCost)} ETH/MATIC`)
 
     const balance = await signer.provider.getBalance(firstAccount)
     console.log(`account balance: ${ethers.formatEther(balance)}`)
@@ -64,4 +84,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     }
 }
 
-module.exports.tags = ["destChain", "all"]
+module.exports.tags = ["NFTPoolBurnAndMint", "destChain", "all"]

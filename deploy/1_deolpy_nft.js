@@ -5,6 +5,26 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy, log } = deployments
 
     log("Deploying nft contract")
+
+    const signer = await ethers.getSigner(firstAccount)
+    const myTokenFactory = await ethers.getContractFactory("MyToken", signer)
+    const txRequest = await myTokenFactory.getDeployTransaction("MyToken", "MT")
+
+    const estimatedGas = await signer.estimateGas(txRequest)
+    const feeData = await signer.provider.getFeeData()
+    const gasPrice = feeData.gasPrice ?? feeData.maxFeePerGas ?? feeData.maxPriorityFeePerGas;
+    const estimatedCost = estimatedGas * gasPrice;
+
+    console.log(`🔍 estimate gas: ${estimatedGas.toString()}`)
+    console.log(`⛽ current gas price: ${ethers.formatUnits(gasPrice, "gwei")} gwei`)
+    console.log(`💰 estimate cost: ${ethers.formatEther(estimatedCost)} ETH/MATIC`)
+
+    const balance = await signer.provider.getBalance(firstAccount)
+    console.log(`account balance: ${ethers.formatEther(balance)}`)
+    if (balance < estimatedCost) {
+        throw new Error(`❌ Not enough ETH/MATIC! Need at least ${ethers.formatEther(estimatedCost)} but got ${ethers.formatEther(balance)}`)
+    }
+
     const myToken = await deploy("MyToken", {
         contract: "MyToken",
         from: firstAccount,
@@ -25,4 +45,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     }
 }
 
-module.exports.tags = ["sourceChain", "all"]
+module.exports.tags = ["MyToken", "sourceChain", "all"]
