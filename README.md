@@ -34,3 +34,4 @@
 ## test
 
 ## task
+- [hardhat-deploy companion network](https://github.com/wighawag/hardhat-deploy?tab=readme-ov-file#companionnetworks)
